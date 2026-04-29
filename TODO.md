@@ -3,7 +3,7 @@
 - [x] User verification
 - [x] TLS cert order process
 - [x] Organisation claim
-- [ ] Organisation claim dispute
+- [x] Organisation claim dispute
 - [ ] Organisation join
 - [ ] 2fa reset
 - [ ] SMIME cert order process

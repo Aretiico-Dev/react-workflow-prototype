@@ -13,6 +13,8 @@ interface SendForReviewStepProps {
     callRecordingFile: File;
     emailConfirmationFile: File;
     callComments: string;
+    pscDecisionNotes: string;
+    pscSupportingFiles: File[];
   };
   flags: Array<{ step: string; comment: string }>;
   onSendForReview: (flag?: { comment: string }) => void;
@@ -137,6 +139,42 @@ export function SendForReviewStep({ claimData, evidence, flags, onSendForReview 
                   Download
                 </button>
               </div>
+
+              {(evidence.pscDecisionNotes || evidence.pscSupportingFiles.length > 0) && (
+                <div className="p-3 border border-[#e0e0e0] rounded-lg bg-[#fafafa]">
+                  <div className="flex items-start gap-3">
+                    <FileText className="w-5 h-5 text-[#101F36] flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <p className="text-[0.875rem] font-medium text-[#212121]">PSC Verification Evidence</p>
+                        <p className="text-[0.75rem] text-[#616161]">
+                          Optional reviewer rationale and supporting evidence for the PSC validation decision
+                        </p>
+                      </div>
+                      {evidence.pscDecisionNotes && (
+                        <div>
+                          <p className="text-[0.75rem] font-medium text-[#212121] mb-1">Reviewer Notes</p>
+                          <p className="text-[0.75rem] text-[#616161] whitespace-pre-wrap">{evidence.pscDecisionNotes}</p>
+                        </div>
+                      )}
+                      {evidence.pscSupportingFiles.length > 0 && (
+                        <div>
+                          <p className="text-[0.75rem] font-medium text-[#212121] mb-1">
+                            Supporting Files ({evidence.pscSupportingFiles.length})
+                          </p>
+                          <ul className="space-y-1">
+                            {evidence.pscSupportingFiles.map((file, index) => (
+                              <li key={`${file.name}-${index}`} className="text-[0.75rem] text-[#616161]">
+                                {file.name}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

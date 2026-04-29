@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { AutomatedChecksReviewStep } from './reviewer/AutomatedChecksReviewStep';
 import { ExtractLocalityStep } from './reviewer/ExtractLocalityStep';
 import { ManualResearchStep } from './reviewer/ManualResearchStep';
@@ -8,6 +9,7 @@ import { JoinTeamsCallStep } from './reviewer/JoinTeamsCallStep';
 import { RecordCallStep } from './reviewer/RecordCallStep';
 import { UploadEmailStep } from './reviewer/UploadEmailStep';
 import { SendForReviewStep } from './reviewer/SendForReviewStep';
+import { DisputeReviewStep } from './reviewer/DisputeReviewStep';
 import { ReviewSentStep } from './reviewer/ReviewSentStep';
 
 type ReviewerStep =
@@ -19,13 +21,19 @@ type ReviewerStep =
   | 'join-teams'
   | 'record-call'
   | 'upload-email'
+  | 'dispute-review'
   | 'send-review'
   | 'review-sent';
 
-export function ReviewerReviewStep() {
+interface ReviewerReviewStepProps {
+  scenario: 'standard' | 'dispute';
+}
+
+export function ReviewerReviewStep({ scenario }: ReviewerReviewStepProps) {
   const [currentStep, setCurrentStep] = useState<ReviewerStep>('automated-checks');
   const [flags, setFlags] = useState<Array<{ step: string; comment: string }>>([]);
   const [cancelled, setCancelled] = useState(false);
+  const reviewerName = 'Sindy Jones';
 
   // Mock data
   const [claimData] = useState({
@@ -53,18 +61,47 @@ export function ReviewerReviewStep() {
     email: 'jane.director@abclimited.com',
   });
 
+  const disputeData = {
+    activeRepresentative: {
+      name: 'Sarah Williams',
+      role: 'Compliance Manager',
+      email: 'sarah.williams@abclimited.com',
+      phone: '+44 20 9876 5432',
+      supportedByPsc: 'Michael Brown, Chair',
+      supportEmail: 'michael.brown@abclimited.com',
+      claimSummary: 'Current representative since May 2024 with active certificate management access.',
+    },
+    claimant: {
+      name: claimData.claimantName,
+      role: claimData.role,
+      email: 'john.smith@abclimited.com',
+      phone: '+44 20 1234 2222',
+      supportedByPsc: `${pscContact.name}, ${pscContact.role}`,
+      supportEmail: pscContact.email,
+      claimSummary: 'Submitted a dispute stating the current representative is no longer authorised to act.',
+    },
+  };
+
   const [evidenceFiles, setEvidenceFiles] = useState<{
     manualReport: File | null;
     callRecording: File | null;
     emailConfirmation: File | null;
     callComments: string;
     callDateTime: string;
+    pscDecisionNotes: string;
+    pscSupportingFiles: File[];
+    disputeRecommendation: 'active-representative' | 'claimant' | null;
+    disputeRecommendationReason: string;
   }>({
     manualReport: null,
     callRecording: null,
     emailConfirmation: null,
     callComments: '',
     callDateTime: '',
+    pscDecisionNotes: '',
+    pscSupportingFiles: [],
+    disputeRecommendation: null,
+    disputeRecommendationReason: '',
   });
 
   const addFlag = (step: string, comment: string) => {
@@ -80,11 +117,30 @@ export function ReviewerReviewStep() {
     { id: 'join-teams', label: 'Teams Call' },
     { id: 'record-call', label: 'Record Call' },
     { id: 'upload-email', label: 'Email Confirmation' },
-    { id: 'send-review', label: 'Send for Review' },
+    ...(scenario === 'dispute'
+      ? [{ id: 'dispute-review' as ReviewerStep, label: 'Dispute Review' }]
+      : [{ id: 'send-review' as ReviewerStep, label: 'Send for Review' }]),
     { id: 'review-sent', label: 'Complete' },
   ];
 
   const currentStepIndex = steps.findIndex(s => s.id === currentStep);
+  const navigationLockStep: ReviewerStep = scenario === 'dispute' ? 'dispute-review' : 'send-review';
+  const navigationLockIndex = steps.findIndex(s => s.id === navigationLockStep);
+  const canNavigateBack = currentStepIndex > 0 && currentStepIndex < navigationLockIndex;
+
+  const navigateToStep = (stepId: ReviewerStep) => {
+    if (currentStepIndex >= navigationLockIndex) return;
+
+    const targetIndex = steps.findIndex(step => step.id === stepId);
+    if (targetIndex >= 0 && targetIndex < currentStepIndex) {
+      setCurrentStep(stepId);
+    }
+  };
+
+  const goToPreviousStep = () => {
+    if (!canNavigateBack) return;
+    setCurrentStep(steps[currentStepIndex - 1].id);
+  };
 
   if (cancelled) {
     return (
@@ -110,10 +166,18 @@ export function ReviewerReviewStep() {
 
               const isComplete = index < currentStepIndex;
               const isCurrent = index === currentStepIndex;
+              const isClickable = currentStepIndex < navigationLockIndex && index < currentStepIndex;
 
               return (
                 <div key={step.id} className="flex items-center flex-1 min-w-[100px]">
-                  <div className="flex flex-col items-center">
+                  <button
+                    type="button"
+                    onClick={() => navigateToStep(step.id)}
+                    disabled={!isClickable}
+                    className={`flex flex-col items-center ${
+                      isClickable ? 'cursor-pointer hover:opacity-80' : 'cursor-default'
+                    } disabled:opacity-100`}
+                  >
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-[0.75rem] font-semibold transition-colors ${
                         isComplete
@@ -132,7 +196,7 @@ export function ReviewerReviewStep() {
                     >
                       {step.label}
                     </span>
-                  </div>
+                  </button>
                   {index < steps.length - 2 && (
                     <div
                       className={`h-0.5 flex-1 mx-2 transition-colors ${
@@ -144,6 +208,19 @@ export function ReviewerReviewStep() {
               );
             })}
           </div>
+        </div>
+      )}
+
+      {canNavigateBack && (
+        <div className="flex justify-start">
+          <button
+            type="button"
+            onClick={goToPreviousStep}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-[#e0e0e0] rounded bg-white text-[0.875rem] font-medium text-[#212121] hover:bg-[#fafafa] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
         </div>
       )}
 
@@ -182,8 +259,13 @@ export function ReviewerReviewStep() {
       {currentStep === 'verify-psc' && (
         <VerifyPSCContactsStep
           providedContacts={pscContact}
-          onNext={(contacts, flag) => {
+          onNext={(contacts, evidence, flag) => {
             setPscContact(contacts);
+            setEvidenceFiles(prev => ({
+              ...prev,
+              pscDecisionNotes: evidence.decisionNotes,
+              pscSupportingFiles: evidence.supportingFiles,
+            }));
             if (flag) addFlag('PSC Verification', flag.comment);
             setCurrentStep('phone-call');
           }}
@@ -193,6 +275,8 @@ export function ReviewerReviewStep() {
       {currentStep === 'phone-call' && (
         <PhoneCallStep
           pscContact={pscContact}
+          claimantName={claimData.claimantName}
+          reviewerName={reviewerName}
           onNext={(callData, flag) => {
             setEvidenceFiles(prev => ({ ...prev, callDateTime: callData.callDateTime, callComments: callData.comments }));
             if (flag) addFlag('Phone Call', flag.comment);
@@ -208,6 +292,8 @@ export function ReviewerReviewStep() {
         <JoinTeamsCallStep
           callDateTime={evidenceFiles.callDateTime}
           pscName={pscContact.name}
+          claimantName={claimData.claimantName}
+          reviewerName={reviewerName}
           onContinue={(flag) => {
             if (flag) addFlag('Teams Call', flag.comment);
             setCurrentStep('record-call');
@@ -230,7 +316,25 @@ export function ReviewerReviewStep() {
           onNext={(email, flag) => {
             setEvidenceFiles(prev => ({ ...prev, emailConfirmation: email }));
             if (flag) addFlag('Email Confirmation', flag.comment);
-            setCurrentStep('send-review');
+            setCurrentStep(scenario === 'dispute' ? 'dispute-review' : 'send-review');
+          }}
+        />
+      )}
+
+      {currentStep === 'dispute-review' && (
+        <DisputeReviewStep
+          organisationName={claimData.organisationName}
+          activeRepresentative={disputeData.activeRepresentative}
+          claimant={disputeData.claimant}
+          initialSelection={evidenceFiles.disputeRecommendation}
+          initialReason={evidenceFiles.disputeRecommendationReason}
+          onSendForReview={(selection, rationale) => {
+            setEvidenceFiles(prev => ({
+              ...prev,
+              disputeRecommendation: selection,
+              disputeRecommendationReason: rationale,
+            }));
+            setCurrentStep('review-sent');
           }}
         />
       )}
@@ -244,6 +348,8 @@ export function ReviewerReviewStep() {
             callRecordingFile: evidenceFiles.callRecording,
             emailConfirmationFile: evidenceFiles.emailConfirmation,
             callComments: evidenceFiles.callComments,
+            pscDecisionNotes: evidenceFiles.pscDecisionNotes,
+            pscSupportingFiles: evidenceFiles.pscSupportingFiles,
           }}
           flags={flags}
           onSendForReview={(flag) => {

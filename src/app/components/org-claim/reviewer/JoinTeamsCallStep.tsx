@@ -4,17 +4,17 @@ import { Video, ExternalLink, Flag, X, CheckCircle } from 'lucide-react';
 interface JoinTeamsCallStepProps {
   callDateTime: string;
   pscName: string;
+  claimantName: string;
+  reviewerName: string;
   onContinue: (flag?: { comment: string }) => void;
 }
 
-export function JoinTeamsCallStep({ callDateTime, pscName, onContinue }: JoinTeamsCallStepProps) {
+export function JoinTeamsCallStep({ callDateTime, pscName, claimantName, reviewerName, onContinue }: JoinTeamsCallStepProps) {
   const [flagged, setFlagged] = useState(false);
   const [flagComment, setFlagComment] = useState('');
-  const [callStarted, setCallStarted] = useState(false);
 
   const handleStartCall = () => {
     window.open('https://teams.microsoft.com/l/meetup-join/', '_blank');
-    setCallStarted(true);
   };
 
   const handleRecordResults = () => {
@@ -98,7 +98,7 @@ export function JoinTeamsCallStep({ callDateTime, pscName, onContinue }: JoinTea
                 <div>
                   <p className="font-medium text-[#212121]">Introduction</p>
                   <p className="text-[#616161] mt-1">
-                    "Hello {pscName}, thank you for joining this call. I'm [Your Name] from Aretiico.
+                    "Hello {pscName}, thank you for joining this call. I'm {reviewerName} from Aretiico.
                     This call should take about 10 minutes."
                   </p>
                 </div>
@@ -123,7 +123,7 @@ export function JoinTeamsCallStep({ callDateTime, pscName, onContinue }: JoinTea
                 <div>
                   <p className="font-medium text-[#212121]">Verify Application</p>
                   <p className="text-[#616161] mt-1">
-                    "Can you confirm that [Claimant Name] is authorized to act as your organisation's
+                    "Can you confirm that {claimantName} is authorized to act as your organisation's
                     representative in the Aretiico system?"
                   </p>
                 </div>
@@ -137,8 +137,8 @@ export function JoinTeamsCallStep({ callDateTime, pscName, onContinue }: JoinTea
                   <p className="font-medium text-[#212121]">Email Confirmation</p>
                   <p className="text-[#616161] mt-1">
                     "We'll need you to send us a confirmation email from your organisation's email address.
-                    Please send it to [verification email] with the subject 'Organisation Representative Confirmation'.
-                    The email should state that you confirm [Claimant Name]'s authority to represent your organisation."
+                    Please send it to validations@aretiico.com with the subject 'Organisation Representative Confirmation'.
+                    The email should state that you confirm {claimantName}'s authority to represent your organisation."
                   </p>
                 </div>
               </div>
@@ -171,7 +171,7 @@ export function JoinTeamsCallStep({ callDateTime, pscName, onContinue }: JoinTea
 
           {/* Actions */}
           <div className="pt-6 border-t border-[#e0e0e0] flex gap-3 justify-end">
-            {!flagged && callStarted && (
+            {!flagged && (
               <button
                 onClick={() => setFlagged(true)}
                 className="flex items-center gap-2 px-6 py-3 border border-[#ffc107] text-[#ffc107] rounded hover:bg-[#fff8e1] transition-colors text-[0.875rem] font-medium"
@@ -180,24 +180,20 @@ export function JoinTeamsCallStep({ callDateTime, pscName, onContinue }: JoinTea
                 FLAG FOR REVIEW
               </button>
             )}
-            {!callStarted ? (
-              <button
-                onClick={handleStartCall}
-                className="flex items-center gap-2 px-6 py-3 bg-[#00c853] text-white rounded hover:bg-[#00a844] transition-colors text-[0.875rem] font-medium"
-              >
-                <ExternalLink className="w-4 h-4" />
-                JOIN CALL IN TEAMS
-              </button>
-            ) : (
-              <button
-                onClick={handleRecordResults}
-                disabled={flagged && !flagComment.trim()}
-                className="flex items-center gap-2 px-6 py-3 bg-[#101F36] text-white rounded hover:bg-[#1565c0] transition-colors text-[0.875rem] font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <CheckCircle className="w-4 h-4" />
-                CONTINUE
-              </button>
-            )}
+            <button
+              onClick={handleStartCall}
+              className="flex items-center gap-2 px-6 py-3 bg-[#00c853] text-white rounded hover:bg-[#00a844] transition-colors text-[0.875rem] font-medium"
+            >
+              <ExternalLink className="w-4 h-4" />
+              JOIN CALL IN TEAMS
+            </button>
+            <button
+              onClick={handleRecordResults}
+              className="flex items-center gap-2 px-6 py-3 bg-[#101F36] text-white rounded hover:bg-[#1565c0] transition-colors text-[0.875rem] font-medium"
+            >
+              <CheckCircle className="w-4 h-4" />
+              CONTINUE
+            </button>
           </div>
         </div>
       </div>

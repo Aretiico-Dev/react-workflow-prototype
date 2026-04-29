@@ -1,6 +1,6 @@
 import { FileText, UserCheck, Building2, Shield } from 'lucide-react';
 
-export type WorkflowType = 'certificate-purchase' | 'user-verification' | 'organisation-claim' | 'organisation-claim-dispute';
+export type WorkflowType = 'certificate-purchase' | 'user-verification' | 'organisation-claim';
 
 interface WorkflowOption {
   id: WorkflowType;
@@ -30,13 +30,6 @@ export const workflows: WorkflowOption[] = [
     title: 'Organisation Claim',
     description: 'Claim organisation representative status',
     icon: Building2,
-    category: 'organization',
-  },
-  {
-    id: 'organisation-claim-dispute',
-    title: 'Organisation Claim Dispute',
-    description: 'Dispute the current organisation ownership',
-    icon: FileText,
     category: 'organization',
   },
 ];

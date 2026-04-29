@@ -14,6 +14,8 @@ interface FinalApprovalStepProps {
     callRecordingSize: number;
     emailConfirmationFileName: string;
     callComments: string;
+    pscDecisionNotes?: string;
+    pscSupportingFileNames?: string[];
   };
   flags: Array<{ step: string; comment: string }>;
   onDecision: (decision: 'approved' | 'rejected', reason?: string) => void;
@@ -143,6 +145,42 @@ export function FinalApprovalStep({ claimData, evidence, flags, onDecision }: Fi
                   Download
                 </button>
               </div>
+
+              {(evidence.pscDecisionNotes || (evidence.pscSupportingFileNames && evidence.pscSupportingFileNames.length > 0)) && (
+                <div className="p-3 border border-[#e0e0e0] rounded-lg bg-[#fafafa]">
+                  <div className="flex items-start gap-3">
+                    <FileText className="w-5 h-5 text-[#101F36] flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <p className="text-[0.875rem] font-medium text-[#212121]">PSC Verification Evidence</p>
+                        <p className="text-[0.75rem] text-[#616161]">
+                          Reviewer rationale and supporting evidence used to validate the PSC
+                        </p>
+                      </div>
+                      {evidence.pscDecisionNotes && (
+                        <div>
+                          <p className="text-[0.75rem] font-medium text-[#212121] mb-1">Reviewer Notes</p>
+                          <p className="text-[0.75rem] text-[#616161] whitespace-pre-wrap">{evidence.pscDecisionNotes}</p>
+                        </div>
+                      )}
+                      {evidence.pscSupportingFileNames && evidence.pscSupportingFileNames.length > 0 && (
+                        <div>
+                          <p className="text-[0.75rem] font-medium text-[#212121] mb-1">
+                            Supporting Files ({evidence.pscSupportingFileNames.length})
+                          </p>
+                          <ul className="space-y-1">
+                            {evidence.pscSupportingFileNames.map((fileName, index) => (
+                              <li key={`${fileName}-${index}`} className="text-[0.75rem] text-[#616161]">
+                                {fileName}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

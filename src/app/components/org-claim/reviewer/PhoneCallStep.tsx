@@ -7,6 +7,8 @@ interface PhoneCallStepProps {
     role: string;
     phone: string;
   };
+  claimantName: string;
+  reviewerName: string;
   onNext: (callData: {
     orgAccepts: boolean;
     teamsEmail: string;
@@ -16,7 +18,7 @@ interface PhoneCallStepProps {
   onCancel: (reason: string) => void;
 }
 
-export function PhoneCallStep({ pscContact, onNext, onCancel }: PhoneCallStepProps) {
+export function PhoneCallStep({ pscContact, claimantName, reviewerName, onNext, onCancel }: PhoneCallStepProps) {
   const [flagged, setFlagged] = useState(false);
   const [flagComment, setFlagComment] = useState('');
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -147,11 +149,11 @@ export function PhoneCallStep({ pscContact, onNext, onCancel }: PhoneCallStepPro
             <p className="text-[0.875rem] font-medium text-[#212121] mb-3">Call Script</p>
             <div className="space-y-3 text-[0.875rem]">
               <p className="text-[#212121]">
-                "Hello, this is [Your Name] from Aretiico. I'm calling about an application we received from [Claimant Name]
+                "Hello, this is {reviewerName} from Aretiico. I'm calling about an application we received from {claimantName}{' '}
                 to become an official representative for your organisation."
               </p>
               <p className="text-[#212121]">
-                "Are you aware of this application, and can you confirm that [Claimant Name] is authorized to represent
+                "Are you aware of this application, and can you confirm that {claimantName} is authorized to represent
                 your organisation in our system?"
               </p>
               <p className="text-[#616161] text-[0.75rem] italic">
@@ -182,7 +184,7 @@ export function PhoneCallStep({ pscContact, onNext, onCancel }: PhoneCallStepPro
 
             <div>
               <label className="text-[0.875rem] font-medium text-[#212121] block mb-2">
-                Email for Teams Call *
+                Email for Teams Call <span className="text-[#f44336]">*</span>
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#616161]" />
@@ -191,15 +193,17 @@ export function PhoneCallStep({ pscContact, onNext, onCancel }: PhoneCallStepPro
                   value={teamsEmail}
                   onChange={(e) => setTeamsEmail(e.target.value)}
                   placeholder="email@company.com"
-                  disabled={!orgAccepts}
-                  className="w-full pl-10 pr-4 py-3 border border-[#e0e0e0] rounded text-[0.875rem] focus:outline-none focus:border-[#101F36] disabled:bg-[#fafafa] disabled:cursor-not-allowed"
+                  className="w-full pl-10 pr-4 py-3 border border-[#e0e0e0] rounded text-[0.875rem] focus:outline-none focus:border-[#101F36]"
                 />
               </div>
+              <p className="text-[0.75rem] text-[#616161] mt-2">
+                Enter the email address provided during the phone call. It does not need to match the PSC email verified earlier.
+              </p>
             </div>
 
             <div>
               <label className="text-[0.875rem] font-medium text-[#212121] block mb-2">
-                Teams Call Date & Time *
+                Teams Call Date & Time <span className="text-[#f44336]">*</span>
               </label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#616161]" />
