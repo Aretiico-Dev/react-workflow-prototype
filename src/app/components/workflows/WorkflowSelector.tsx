@@ -1,6 +1,6 @@
 import { FileText, UserCheck, Building2, Shield } from 'lucide-react';
 
-export type WorkflowType = 'certificate-purchase' | 'user-verification' | 'organisation-claim';
+export type WorkflowType = 'certificate-purchase' | 'user-verification' | 'organisation-claim' | 'organisation-join-request';
 
 interface WorkflowOption {
   id: WorkflowType;
@@ -9,6 +9,8 @@ interface WorkflowOption {
   icon: typeof Shield;
   category: 'certificates' | 'verification' | 'organization';
 }
+
+import { UserPlus } from 'lucide-react';
 
 export const workflows: WorkflowOption[] = [
   {
@@ -30,6 +32,13 @@ export const workflows: WorkflowOption[] = [
     title: 'Organisation Claim',
     description: 'Claim organisation representative status',
     icon: Building2,
+    category: 'organization',
+  },
+  {
+    id: 'organisation-join-request',
+    title: 'Organisation Join Request',
+    description: 'Review and approve join requests for your organisation',
+    icon: UserPlus,
     category: 'organization',
   },
 ];
