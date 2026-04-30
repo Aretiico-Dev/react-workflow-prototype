@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Menu, Bell, Globe, User, Shield, FileText, Building2, CheckSquare, Mail, Home } from 'lucide-react';
-import { Button } from '../ui/button';
 import { WorkflowSelector, WorkflowType } from '../workflows/WorkflowSelector';
 
 interface AppShellProps {
@@ -10,7 +9,12 @@ interface AppShellProps {
   showPrototypeControls?: boolean;
 }
 
-export function AppShell({ children, currentWorkflow, onWorkflowChange, showPrototypeControls = true }: AppShellProps) {
+export function AppShell({
+  children,
+  currentWorkflow,
+  onWorkflowChange,
+  showPrototypeControls = true,
+}: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = [
@@ -43,7 +47,7 @@ export function AppShell({ children, currentWorkflow, onWorkflowChange, showProt
             {showPrototypeControls && currentWorkflow && onWorkflowChange && (
               <>
                 <div className="h-8 w-px bg-[#e0e0e0] hidden md:block"></div>
-                <div className="hidden md:flex items-center gap-2">
+                <div className="hidden md:flex items-center gap-4">
                   <span className="text-[0.75rem] text-[#616161] uppercase tracking-wide">Prototype:</span>
                   <WorkflowSelector
                     currentWorkflow={currentWorkflow}

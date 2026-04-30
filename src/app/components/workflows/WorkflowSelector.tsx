@@ -1,6 +1,6 @@
-import { FileText, UserCheck, Building2, Shield } from 'lucide-react';
+import { FileText, UserCheck, Building2, Shield, KeyRound, UserPlus, MailCheck } from 'lucide-react';
 
-export type WorkflowType = 'certificate-purchase' | 'user-verification' | 'organisation-claim' | 'organisation-join-request';
+export type WorkflowType = 'certificate-purchase' | 'smime-certificate-purchase' | 'user-verification' | 'organisation-claim' | 'organisation-join-request' | '2fa-reset';
 
 interface WorkflowOption {
   id: WorkflowType;
@@ -10,7 +10,6 @@ interface WorkflowOption {
   category: 'certificates' | 'verification' | 'organization';
 }
 
-import { UserPlus } from 'lucide-react';
 
 export const workflows: WorkflowOption[] = [
   {
@@ -18,6 +17,13 @@ export const workflows: WorkflowOption[] = [
     title: 'Certificate Purchase',
     description: 'Order and verify TLS/SSL certificates for domains',
     icon: Shield,
+    category: 'certificates',
+  },
+  {
+    id: 'smime-certificate-purchase',
+    title: 'S/MIME Certificate Purchase',
+    description: 'Order and verify S/MIME certificates for email addresses',
+    icon: MailCheck,
     category: 'certificates',
   },
   {
@@ -40,6 +46,13 @@ export const workflows: WorkflowOption[] = [
     description: 'Review and approve join requests for your organisation',
     icon: UserPlus,
     category: 'organization',
+  },
+  {
+    id: '2fa-reset',
+    title: '2FA Reset',
+    description: 'Reset two factor authentication for a user',
+    icon: KeyRound,
+    category: 'verification',
   },
 ];
 
