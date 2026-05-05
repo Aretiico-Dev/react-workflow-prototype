@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AppShell } from './components/v2/AppShell';
 import { WorkflowType } from './components/workflows/WorkflowSelector';
 import { AdobeCertificatePurchaseWorkflow } from './components/workflows/AdobeCertificatePurchaseWorkflow';
+import AviationCertificateWorkflow from './components/workflows/AviationCertificateWorkflow';
 import { CertificatePurchaseWorkflow } from './components/workflows/CertificatePurchaseWorkflow';
 import { SmimeCertificatePurchaseWorkflow } from './components/workflows/SmimeCertificatePurchaseWorkflow';
 import { UserVerificationWorkflow } from './components/workflows/UserVerificationWorkflow';
@@ -21,6 +22,7 @@ export default function App() {
       {currentWorkflow === 'certificate-purchase' && <CertificatePurchaseWorkflow />}
       {currentWorkflow === 'smime-certificate-purchase' && <SmimeCertificatePurchaseWorkflow />}
       {currentWorkflow === 'adobe-certificate-purchase' && <AdobeCertificatePurchaseWorkflow />}
+      {currentWorkflow === 'aviation-certificate-purchase' && <AviationCertificateWorkflow />}
       {currentWorkflow === 'user-verification' && <UserVerificationWorkflow />}
       {currentWorkflow === 'organisation-claim' && <OrganisationClaimWorkflow />}
       {currentWorkflow === 'organisation-join-request' && !joinDecision && (

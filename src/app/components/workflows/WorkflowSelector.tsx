@@ -1,6 +1,6 @@
-import { FileSignature, UserCheck, Building2, Shield, KeyRound, UserPlus, MailCheck } from 'lucide-react';
+import { FileSignature, UserCheck, Building2, Shield, KeyRound, UserPlus, MailCheck, Plane } from 'lucide-react';
 
-export type WorkflowType = 'certificate-purchase' | 'smime-certificate-purchase' | 'adobe-certificate-purchase' | 'user-verification' | 'organisation-claim' | 'organisation-join-request' | '2fa-reset';
+export type WorkflowType = 'certificate-purchase' | 'smime-certificate-purchase' | 'adobe-certificate-purchase' | 'aviation-certificate-purchase' | 'user-verification' | 'organisation-claim' | 'organisation-join-request' | '2fa-reset';
 
 interface WorkflowOption {
   id: WorkflowType;
@@ -31,6 +31,13 @@ export const workflows: WorkflowOption[] = [
     title: 'Adobe Certificate Purchase',
     description: 'Order Adobe document signing certificates for organisations',
     icon: FileSignature,
+    category: 'certificates',
+  },
+  {
+    id: 'aviation-certificate-purchase',
+    title: 'Aviation Certificate Purchase',
+    description: 'Select aviation certificate products and enrolment methods',
+    icon: Plane,
     category: 'certificates',
   },
   {
