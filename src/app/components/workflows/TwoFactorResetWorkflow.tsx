@@ -21,11 +21,40 @@ interface ResetRequest {
   legalName: string;
   email: string;
   idFileName: string;
+  idFileUrl: string;
   linkedUser?: {
     id: string;
     name: string;
     aretiicoId: string;
+    dateOfBirth: string;
+    emails: string[];
+    idDocument: {
+      fileUrl: string;
+      type: string;
+    };
   };
+  reviewerDecisionContext?: {
+    notes: string;
+    attachments: Array<{
+      name: string;
+      sizeLabel: string;
+    }>;
+    flag?: {
+      comment: string;
+    };
+  };
+}
+
+interface RejectionRecord {
+  reason: string;
+  rejectedBy: string;
+  rejectedAt: string;
+}
+
+interface ApprovalSubmissionRecord {
+  submittedBy: string;
+  submittedAt: string;
+  pendingWith: string;
 }
 
 const twoFactorRoles: RoleOption[] = [
@@ -53,23 +82,55 @@ const twoFactorRoles: RoleOption[] = [
 ];
 
 const mockUsers = [
-  { id: 'usr-2001', name: 'Alex Morgan', aretiicoId: '100200300401' },
-  { id: 'usr-2002', name: 'Sam Patel', aretiicoId: '100200300402' },
-  { id: 'usr-2003', name: 'Jordan Lee', aretiicoId: '100200300403' },
+  {
+    id: 'usr-2001',
+    name: 'Sarah Meredyth Morgan',
+    aretiicoId: '100200300401',
+    dateOfBirth: '1976-03-11',
+    emails: ['sarah.morgan@example.com', 's.morgan@northbridge.test'],
+    idDocument: {
+      fileUrl: '/src/imports/driving_license.jpeg',
+      type: 'UK Driving Licence',
+    },
+  },
+  {
+    id: 'usr-2002',
+    name: 'Sam Patel',
+    aretiicoId: '100200300402',
+    dateOfBirth: '1989-10-02',
+    emails: ['sam.patel@example.com'],
+    idDocument: {
+      fileUrl: '/src/imports/driving_license.jpeg',
+      type: 'UK Driving Licence',
+    },
+  },
+  {
+    id: 'usr-2003',
+    name: 'Jordan Lee',
+    aretiicoId: '100200300403',
+    dateOfBirth: '1992-07-24',
+    emails: ['jordan.lee@example.com', 'j.lee+admin@example.com'],
+    idDocument: {
+      fileUrl: '/src/imports/driving_license.jpeg',
+      type: 'UK Driving Licence',
+    },
+  },
 ];
 
 const starterRequest: ResetRequest = {
   aretiicoId: '100200300401',
-  legalName: 'Alex Morgan',
-  email: 'alex.morgan@example.com',
-  idFileName: 'alex-morgan-passport.pdf',
+  legalName: 'Sarah Meredyth Morgan',
+  email: 'sarah.morgan@example.com',
+  idFileName: 'sarah-morgan-driving-licence.jpeg',
+  idFileUrl: '/src/imports/driving_license.jpeg',
   linkedUser: mockUsers[0],
 };
 
 export function TwoFactorResetWorkflow() {
   const [role, setRole] = useState<TwoFactorRole>('customer');
   const [status, setStatus] = useState<TwoFactorStatus>('draft');
-  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectionRecord, setRejectionRecord] = useState<RejectionRecord | null>(null);
+  const [approvalSubmissionRecord, setApprovalSubmissionRecord] = useState<ApprovalSubmissionRecord | null>(null);
   const [request, setRequest] = useState<ResetRequest>(starterRequest);
 
   const roleConfig = getRoleConfig(role, twoFactorRoles);
@@ -85,34 +146,63 @@ export function TwoFactorResetWorkflow() {
       legalName: data.legalName,
       email: data.email,
       idFileName: data.idFile?.name || 'government-id.pdf',
+      idFileUrl: starterRequest.idFileUrl,
       linkedUser: starterRequest.linkedUser,
     });
-    setRejectionReason('');
+    setRejectionRecord(null);
+    setApprovalSubmissionRecord(null);
     setStatus('submitted');
   }
 
-  function handleSendForApproval(userId: string) {
-    const linkedUser = mockUsers.find((user) => user.id === userId) || mockUsers[0];
+  function handleSendForApproval(payload: {
+    userId: string;
+    reviewerNotes: string;
+    reviewerFiles: File[];
+    flag?: { comment: string };
+  }) {
+    const linkedUser = mockUsers.find((user) => user.id === payload.userId) || mockUsers[0];
     setRequest((current) => ({
       ...current,
       linkedUser,
+      reviewerDecisionContext: {
+        notes: payload.reviewerNotes,
+        attachments: payload.reviewerFiles.map((file) => ({
+          name: file.name,
+          sizeLabel: `${Math.max(1, Math.round(file.size / 1024))} KB`,
+        })),
+        flag: payload.flag,
+      },
     }));
-    setRejectionReason('');
+    setRejectionRecord(null);
+    setApprovalSubmissionRecord({
+      submittedBy: 'Priya Shah, Application Reviewer',
+      submittedAt: new Date().toISOString(),
+      pendingWith: 'Martin Hughes, Admin Approver',
+    });
     setStatus('sent_for_approval');
   }
 
   function handleReject(reason: string) {
-    setRejectionReason(reason);
+    const rejectedBy = role === 'reviewer' ? 'Priya Shah, Application Reviewer' : 'Martin Hughes, Admin Approver';
+    setRejectionRecord({
+      reason,
+      rejectedBy,
+      rejectedAt: new Date().toISOString(),
+    });
+    if (status !== 'sent_for_approval') {
+      setApprovalSubmissionRecord(null);
+    }
     setStatus('rejected');
   }
 
   function handleApprove() {
-    setRejectionReason('');
+    setRejectionRecord(null);
     setStatus('approved');
   }
 
   function resetCustomerDraft() {
-    setRejectionReason('');
+    setRejectionRecord(null);
+    setApprovalSubmissionRecord(null);
     setStatus('draft');
   }
 
@@ -157,10 +247,10 @@ export function TwoFactorResetWorkflow() {
         />
       )}
       {role === 'reviewer' && status === 'sent_for_approval' && (
-        <AdminTwoFactorResetSentForApproval />
+        approvalSubmissionRecord && <AdminTwoFactorResetSentForApproval request={request} approvalSubmission={approvalSubmissionRecord} />
       )}
       {role === 'reviewer' && status === 'rejected' && (
-        <AdminTwoFactorResetRejectedConfirmation reason={rejectionReason} />
+        rejectionRecord && <AdminTwoFactorResetRejectedConfirmation request={request} rejection={rejectionRecord} />
       )}
       {role === 'approver' && status === 'sent_for_approval' && request.linkedUser && (
         <AdminTwoFactorResetApproverStep
@@ -176,7 +266,7 @@ export function TwoFactorResetWorkflow() {
         <AdminTwoFactorResetApprovedConfirmation />
       )}
       {role === 'approver' && status === 'rejected' && (
-        <AdminTwoFactorResetRejectedConfirmation reason={rejectionReason} />
+        rejectionRecord && <AdminTwoFactorResetRejectedConfirmation request={request} rejection={rejectionRecord} />
       )}
 
       <div className="bg-[#fafafa] rounded border border-[#e0e0e0] p-4">

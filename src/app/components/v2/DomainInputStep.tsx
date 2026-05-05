@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Shield, Building2, AlertCircle, Plus, X } from 'lucide-react';
+import { Building2, AlertCircle, Plus, X } from 'lucide-react';
 import { CancelOrderDialog } from './CancelOrderDialog';
 
 interface DomainInputStepProps {
-  onNext: (domains: string[], certificateType: 'dv' | 'ov', isWildcard: boolean, organizationId?: string) => void;
+  onNext: (domains: string[], certificateType: 'dv' | 'ov', isWildcard: boolean, organizationId?: string, ownerId?: string) => void;
   onCancel?: () => void;
   hasValidatedOrganization: boolean;
 }
@@ -14,6 +14,14 @@ interface Organization {
   id: string;
   name: string;
   status: OrganizationStatus;
+  validatedUntil?: string;
+}
+
+interface CertificateOwner {
+  id: string;
+  name: string;
+  type: 'user' | 'organization';
+  status: 'active' | OrganizationStatus;
   validatedUntil?: string;
 }
 
@@ -42,43 +50,75 @@ const mockOrganizations: Organization[] = [
   },
 ];
 
+const certificateOwners: CertificateOwner[] = [
+  {
+    id: 'user-jim-taylor',
+    name: 'Jim Taylor',
+    type: 'user',
+    status: 'active',
+  },
+  ...mockOrganizations.map((org) => ({
+    id: org.id,
+    name: org.name,
+    type: 'organization' as const,
+    status: org.status,
+    validatedUntil: org.validatedUntil,
+  })),
+];
+
 const statusConfig = {
   validated: {
     label: 'Validated',
     color: 'bg-[#b9f6ca] text-[#00c853] border-[#00c853]',
+    reason: 'Eligible for certificate ownership and OV attestation',
   },
   expired: {
     label: 'Expired',
     color: 'bg-[#f9d8d8] text-[#f44336] border-[#f44336]',
+    reason: 'Organisation validation has expired',
   },
   suspended: {
     label: 'Suspended',
     color: 'bg-[#fff8e1] text-[#ffc107] border-[#ffc107]',
+    reason: 'Organisation access is suspended',
   },
   'not-validated': {
     label: 'Not Validated',
     color: 'bg-[#e0e0e0] text-[#616161] border-[#787878]',
+    reason: 'Organisation has not completed validation',
   },
+};
+
+const ownerStatusConfig = {
+  active: {
+    label: 'User',
+    color: 'bg-[#e3f2fd] text-[#101F36] border-[#90caf9]',
+    reason: 'Personal account',
+  },
+  ...statusConfig,
 };
 
 export function DomainInputStep({ onNext, onCancel, hasValidatedOrganization }: DomainInputStepProps) {
   const [domains, setDomains] = useState<string[]>(['']);
   const [isWildcard, setIsWildcard] = useState(false);
   const [certificateType, setCertificateType] = useState<'dv' | 'ov'>('dv');
-  const [selectedOrganization, setSelectedOrganization] = useState<string>('');
+  const [selectedOwner, setSelectedOwner] = useState('user-jim-taylor');
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+
+  const selectedOwnerDetails = certificateOwners.find(owner => owner.id === selectedOwner);
+  const canOrderOv = selectedOwnerDetails?.type === 'organization' && selectedOwnerDetails.status === 'validated' && hasValidatedOrganization;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const validDomains = domains.filter(d => d.trim() !== '');
-    if (validDomains.length > 0 && (certificateType === 'dv' || (certificateType === 'ov' && selectedOrganization))) {
+    if (validDomains.length > 0 && (certificateType === 'dv' || canOrderOv)) {
       const processedDomains = isWildcard && validDomains[0]
         ? validDomains.slice(0, 1).map(d => {
             const trimmed = d.trim();
             return trimmed.startsWith('*.') ? trimmed : `*.${trimmed}`;
           })
         : validDomains.map(d => d.trim());
-      onNext(processedDomains, certificateType, isWildcard, selectedOrganization || undefined);
+      onNext(processedDomains, certificateType, isWildcard, certificateType === 'ov' ? selectedOwner : undefined, selectedOwner);
     }
   };
 
@@ -110,8 +150,15 @@ export function DomainInputStep({ onNext, onCancel, hasValidatedOrganization }: 
     }
   };
 
-  const validatedOrg = mockOrganizations.find(org => org.status === 'validated');
   const hasValidDomain = domains.some(d => d.trim() !== '');
+
+  const handleOwnerChange = (ownerId: string) => {
+    const owner = certificateOwners.find(item => item.id === ownerId);
+    setSelectedOwner(ownerId);
+    if (!(owner?.type === 'organization' && owner.status === 'validated')) {
+      setCertificateType('dv');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -130,6 +177,49 @@ export function DomainInputStep({ onNext, onCancel, hasValidatedOrganization }: 
 
         <div className="px-6 py-6">
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-[#101F36]">
+                <Building2 className="w-4 h-4" />
+                <label htmlFor="tls-certificate-owner" className="block text-[0.875rem] font-medium text-[#212121]">
+                  Certificate Owner
+                </label>
+              </div>
+
+              <select
+                id="tls-certificate-owner"
+                value={selectedOwner}
+                onChange={(e) => handleOwnerChange(e.target.value)}
+                className="w-full px-4 py-2.5 border border-[#787878] rounded-lg bg-white text-[0.875rem] text-[#212121] focus:outline-none focus:border-[#101F36] focus:ring-1 focus:ring-[#101F36]"
+              >
+                {certificateOwners.map((owner) => {
+                  const config = ownerStatusConfig[owner.status];
+                  const disabled = owner.type === 'organization' && owner.status !== 'validated';
+
+                  return (
+                    <option key={owner.id} value={owner.id} disabled={disabled}>
+                      {owner.name} - {owner.type === 'user' ? 'Individual' : config.label}{disabled ? ` (${config.reason || 'Not eligible'})` : ''}
+                    </option>
+                  );
+                })}
+              </select>
+
+              {selectedOwnerDetails && (
+                <div className="p-3 border border-[#e0e0e0] rounded bg-[#fafafa]">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[0.875rem] font-medium text-[#212121]">{selectedOwnerDetails.name}</span>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-semibold border ${ownerStatusConfig[selectedOwnerDetails.status].color}`}>
+                      {selectedOwnerDetails.type === 'user' ? 'Individual' : ownerStatusConfig[selectedOwnerDetails.status].label}
+                    </span>
+                  </div>
+                  <p className="text-[0.75rem] text-[#616161] mt-1">
+                    {selectedOwnerDetails.type === 'user'
+                      ? 'This certificate will be owned by and charged to Jim Taylor.'
+                      : `This certificate will be owned by and charged to ${selectedOwnerDetails.name}.`}
+                  </p>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <label className="block text-[0.875rem] font-medium text-[#212121]">
@@ -218,10 +308,7 @@ export function DomainInputStep({ onNext, onCancel, hasValidatedOrganization }: 
                   name="certificateType"
                   value="dv"
                   checked={certificateType === 'dv'}
-                  onChange={(e) => {
-                    setCertificateType(e.target.value as 'dv');
-                    setSelectedOrganization('');
-                  }}
+                  onChange={(e) => setCertificateType(e.target.value as 'dv')}
                   className="mt-1 accent-[#101F36]"
                 />
                 <div className="flex-1">
@@ -234,19 +321,14 @@ export function DomainInputStep({ onNext, onCancel, hasValidatedOrganization }: 
 
               <label className={`flex items-start gap-3 p-4 border rounded cursor-pointer transition-colors ${
                 certificateType === 'ov' ? 'border-[#101F36] bg-[#e3f2fd]' : 'border-[#e0e0e0] hover:border-[#90caf9]'
-              } ${!hasValidatedOrganization ? 'opacity-50 cursor-not-allowed' : ''}`}>
+              } ${!canOrderOv ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <input
                   type="radio"
                   name="certificateType"
                   value="ov"
                   checked={certificateType === 'ov'}
-                  onChange={(e) => {
-                    setCertificateType(e.target.value as 'ov');
-                    if (validatedOrg) {
-                      setSelectedOrganization(validatedOrg.id);
-                    }
-                  }}
-                  disabled={!hasValidatedOrganization}
+                  onChange={(e) => setCertificateType(e.target.value as 'ov')}
+                  disabled={!canOrderOv}
                   className="mt-1 accent-[#101F36]"
                 />
                 <div className="flex-1">
@@ -254,98 +336,14 @@ export function DomainInputStep({ onNext, onCancel, hasValidatedOrganization }: 
                   <p className="text-[0.75rem] text-[#616161] mt-1">
                     Enhanced validation. Includes organization details in certificate. Better trust indicators.
                   </p>
-                  {!hasValidatedOrganization && (
+                  {!canOrderOv && (
                     <p className="text-[0.75rem] text-[#ffc107] mt-2">
-                      You must belong to a validated organization to purchase OV certificates.
+                      Select a validated organisation as the certificate owner to purchase OV certificates.
                     </p>
                   )}
                 </div>
               </label>
             </div>
-
-            {certificateType === 'ov' && (
-              <div className="space-y-3 pt-2">
-                <div className="flex items-center gap-2 text-[#101F36]">
-                  <Building2 className="w-4 h-4" />
-                  <label className="block text-[0.875rem] font-medium text-[#212121]">
-                    Select Organization
-                  </label>
-                </div>
-
-                <div className="space-y-2">
-                  {mockOrganizations.map((org) => {
-                    const config = statusConfig[org.status];
-                    const isSelectable = org.status === 'validated';
-
-                    return (
-                      <label
-                        key={org.id}
-                        className={`flex items-start gap-3 p-3 border rounded transition-colors ${
-                          selectedOrganization === org.id
-                            ? 'border-[#101F36] bg-[#e3f2fd]'
-                            : 'border-[#e0e0e0]'
-                        } ${
-                          isSelectable
-                            ? 'cursor-pointer hover:border-[#90caf9]'
-                            : 'cursor-not-allowed opacity-60'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="organization"
-                          value={org.id}
-                          checked={selectedOrganization === org.id}
-                          onChange={(e) => setSelectedOrganization(e.target.value)}
-                          disabled={!isSelectable}
-                          className="mt-1 accent-[#101F36]"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-[0.875rem] font-medium text-[#212121]">
-                              {org.name}
-                            </span>
-                            <span
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-semibold border ${config.color}`}
-                            >
-                              {config.label}
-                            </span>
-                          </div>
-                          {org.validatedUntil && org.status === 'validated' && (
-                            <p className="text-[0.75rem] text-[#616161] mt-1">
-                              Valid until {new Date(org.validatedUntil).toLocaleDateString()}
-                            </p>
-                          )}
-                          {org.status === 'expired' && org.validatedUntil && (
-                            <p className="text-[0.75rem] text-[#f44336] mt-1">
-                              Validation expired on {new Date(org.validatedUntil).toLocaleDateString()}
-                            </p>
-                          )}
-                          {org.status === 'suspended' && (
-                            <p className="text-[0.75rem] text-[#ffc107] mt-1">
-                              Organisation access suspended - contact support
-                            </p>
-                          )}
-                          {org.status === 'not-validated' && (
-                            <p className="text-[0.75rem] text-[#616161] mt-1">
-                              Organisation validation pending
-                            </p>
-                          )}
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-
-                {certificateType === 'ov' && !selectedOrganization && (
-                  <div className="flex items-start gap-2 p-3 bg-[#fff8e1] border border-[#ffc107] rounded">
-                    <AlertCircle className="w-4 h-4 text-[#ffc107] mt-0.5 flex-shrink-0" />
-                    <p className="text-[0.75rem] text-[#212121]">
-                      Please select a validated organization to continue with OV certificate
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
 
             <div className="flex gap-3">
               {onCancel && (
@@ -359,7 +357,7 @@ export function DomainInputStep({ onNext, onCancel, hasValidatedOrganization }: 
               )}
               <button
                 type="submit"
-                disabled={!hasValidDomain || (certificateType === 'ov' && !selectedOrganization)}
+                disabled={!hasValidDomain || (certificateType === 'ov' && !canOrderOv)}
                 className="flex-1 px-6 py-3 bg-[#101F36] text-white rounded hover:bg-[#1565c0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 CONTINUE TO VERIFICATION

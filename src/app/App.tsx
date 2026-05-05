@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AppShell } from './components/v2/AppShell';
 import { WorkflowType } from './components/workflows/WorkflowSelector';
+import { AdobeCertificatePurchaseWorkflow } from './components/workflows/AdobeCertificatePurchaseWorkflow';
 import { CertificatePurchaseWorkflow } from './components/workflows/CertificatePurchaseWorkflow';
 import { SmimeCertificatePurchaseWorkflow } from './components/workflows/SmimeCertificatePurchaseWorkflow';
 import { UserVerificationWorkflow } from './components/workflows/UserVerificationWorkflow';
@@ -10,7 +11,6 @@ import { TwoFactorResetWorkflow } from './components/workflows/TwoFactorResetWor
 import { OrganisationJoinRequestStep } from './components/org-claim/OrganisationJoinRequestStep';
 import { OrganisationJoinRequestConfirmation } from './components/org-claim/OrganisationJoinRequestConfirmation';
 import { Toaster } from './components/ui/sonner';
-import { DisputeStartStep } from './components/org-claim-dispute/DisputeStartStep';
 
 export default function App() {
   const [currentWorkflow, setCurrentWorkflow] = useState<WorkflowType>('certificate-purchase');
@@ -20,9 +20,9 @@ export default function App() {
     <AppShell currentWorkflow={currentWorkflow} onWorkflowChange={w => { setCurrentWorkflow(w); setJoinDecision(null); }}>
       {currentWorkflow === 'certificate-purchase' && <CertificatePurchaseWorkflow />}
       {currentWorkflow === 'smime-certificate-purchase' && <SmimeCertificatePurchaseWorkflow />}
+      {currentWorkflow === 'adobe-certificate-purchase' && <AdobeCertificatePurchaseWorkflow />}
       {currentWorkflow === 'user-verification' && <UserVerificationWorkflow />}
       {currentWorkflow === 'organisation-claim' && <OrganisationClaimWorkflow />}
-      {currentWorkflow === 'organisation-claim-dispute' && <DisputeStartStep />}
       {currentWorkflow === 'organisation-join-request' && !joinDecision && (
         <OrganisationJoinRequestStep
           applicantName="Alexandra Johnson"

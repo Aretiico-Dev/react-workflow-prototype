@@ -56,10 +56,10 @@ export function OrganizationDetailsStep({ domain, domains, certificateType, orga
         </p>
       </div>
 
-      <div className="flex items-start gap-3 p-4 bg-[#b9f6ca] border border-[#00c853] rounded">
+      <div className="flex items-start gap-3 p-4 bg-[#e3f2fd] border border-[#90caf9] rounded">
         <CheckCircle2 className="h-5 w-5 text-[#00c853] flex-shrink-0 mt-0.5" />
         <p className="text-[0.875rem] text-[#212121]">
-          {displayDomains.length === 1 ? 'Domain ownership' : 'All domains'} verified successfully
+          {displayDomains.length === 1 ? 'Domain' : 'Domains'} captured successfully. Domain ownership verification will follow organisation approval if required.
         </p>
       </div>
 
@@ -187,7 +187,7 @@ export function OrganizationDetailsStep({ domain, domains, certificateType, orga
                 type="submit"
                 className="flex-1 px-6 py-3 bg-[#101F36] text-white rounded hover:bg-[#1565c0] transition-colors"
               >
-                {includeOrg ? 'ISSUE OV CERTIFICATE' : 'ISSUE DV CERTIFICATE'}
+                {includeOrg ? 'ORDER OV CERTIFICATE' : 'ORDER DV CERTIFICATE'}
               </button>
             </div>
           </form>

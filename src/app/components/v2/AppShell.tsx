@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Menu, Bell, Globe, User, Shield, FileText, Building2, CheckSquare, Mail, Home } from 'lucide-react';
-import { WorkflowSelector, WorkflowType } from '../workflows/WorkflowSelector';
+import { workflows, WorkflowType } from '../workflows/WorkflowSelector';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -17,7 +17,7 @@ export function AppShell({
 }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const navItems = [
+  const defaultNavItems = [
     { icon: Home, label: 'Dashboard', active: false },
     { icon: Shield, label: 'Certificates', active: true },
     { icon: Building2, label: 'Organisations', active: false },
@@ -25,6 +25,12 @@ export function AppShell({
     { icon: FileText, label: 'Domains', active: false },
     { icon: Mail, label: 'Invites', active: false },
   ];
+  const showWorkflowNav = showPrototypeControls && currentWorkflow && onWorkflowChange;
+
+  const handleWorkflowChange = (workflow: WorkflowType) => {
+    onWorkflowChange?.(workflow);
+    setSidebarOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-[#fafafa]">
@@ -44,18 +50,6 @@ export function AppShell({
                 Aretiico
               </span>
             </div>
-            {showPrototypeControls && currentWorkflow && onWorkflowChange && (
-              <>
-                <div className="h-8 w-px bg-[#e0e0e0] hidden md:block"></div>
-                <div className="hidden md:flex items-center gap-4">
-                  <span className="text-[0.75rem] text-[#616161] uppercase tracking-wide">Prototype:</span>
-                  <WorkflowSelector
-                    currentWorkflow={currentWorkflow}
-                    onWorkflowChange={onWorkflowChange}
-                  />
-                </div>
-              </>
-            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -80,22 +74,60 @@ export function AppShell({
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <nav className="p-4 space-y-1">
-          {navItems.map((item) => (
-            <button
-              key={item.label}
-              className={`
-                w-full flex items-center gap-3 px-4 py-3 rounded text-left transition-colors
-                ${item.active
-                  ? 'bg-[#e3f2fd] text-[#101F36] font-medium'
-                  : 'text-[#616161] hover:bg-gray-50'
-                }
-              `}
-              style={{ fontFamily: 'Titillium Web, sans-serif' }}
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="text-sm">{item.label}</span>
-            </button>
-          ))}
+          {showWorkflowNav ? (
+            <>
+              <div className="px-4 pb-2 text-[0.75rem] font-semibold uppercase tracking-wide text-[#616161]">
+                Prototypes
+              </div>
+              {workflows.map((workflow) => {
+                const Icon = workflow.icon;
+                const active = workflow.id === currentWorkflow;
+
+                return (
+                  <button
+                    key={workflow.id}
+                    type="button"
+                    onClick={() => handleWorkflowChange(workflow.id)}
+                    aria-current={active ? 'page' : undefined}
+                    className={`
+                      w-full flex items-start gap-3 px-4 py-3 rounded text-left transition-colors
+                      ${active
+                        ? 'bg-[#e3f2fd] text-[#101F36] font-medium'
+                        : 'text-[#616161] hover:bg-gray-50'
+                      }
+                    `}
+                    style={{ fontFamily: 'Titillium Web, sans-serif' }}
+                  >
+                    <Icon className="mt-0.5 w-5 h-5 shrink-0" />
+                    <span className="min-w-0">
+                      <span className="block text-sm leading-5">{workflow.title}</span>
+                      <span className={`block text-[0.75rem] leading-4 ${active ? 'text-[#455a64]' : 'text-[#757575]'}`}>
+                        {workflow.description}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </>
+          ) : (
+            defaultNavItems.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                className={`
+                  w-full flex items-center gap-3 px-4 py-3 rounded text-left transition-colors
+                  ${item.active
+                    ? 'bg-[#e3f2fd] text-[#101F36] font-medium'
+                    : 'text-[#616161] hover:bg-gray-50'
+                  }
+                `}
+                style={{ fontFamily: 'Titillium Web, sans-serif' }}
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="text-sm">{item.label}</span>
+              </button>
+            ))
+          )}
         </nav>
       </aside>
 

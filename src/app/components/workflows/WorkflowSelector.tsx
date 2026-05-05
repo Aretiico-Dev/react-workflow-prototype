@@ -1,6 +1,6 @@
-import { FileText, UserCheck, Building2, Shield, KeyRound, UserPlus, MailCheck } from 'lucide-react';
+import { FileSignature, UserCheck, Building2, Shield, KeyRound, UserPlus, MailCheck } from 'lucide-react';
 
-export type WorkflowType = 'certificate-purchase' | 'smime-certificate-purchase' | 'user-verification' | 'organisation-claim' | 'organisation-join-request' | '2fa-reset';
+export type WorkflowType = 'certificate-purchase' | 'smime-certificate-purchase' | 'adobe-certificate-purchase' | 'user-verification' | 'organisation-claim' | 'organisation-join-request' | '2fa-reset';
 
 interface WorkflowOption {
   id: WorkflowType;
@@ -14,7 +14,7 @@ interface WorkflowOption {
 export const workflows: WorkflowOption[] = [
   {
     id: 'certificate-purchase',
-    title: 'Certificate Purchase',
+    title: 'TLS Purchase',
     description: 'Order and verify TLS/SSL certificates for domains',
     icon: Shield,
     category: 'certificates',
@@ -24,6 +24,13 @@ export const workflows: WorkflowOption[] = [
     title: 'S/MIME Certificate Purchase',
     description: 'Order and verify S/MIME certificates for email addresses',
     icon: MailCheck,
+    category: 'certificates',
+  },
+  {
+    id: 'adobe-certificate-purchase',
+    title: 'Adobe Certificate Purchase',
+    description: 'Order Adobe document signing certificates for organisations',
+    icon: FileSignature,
     category: 'certificates',
   },
   {
@@ -55,33 +62,3 @@ export const workflows: WorkflowOption[] = [
     category: 'verification',
   },
 ];
-
-interface WorkflowSelectorProps {
-  currentWorkflow: WorkflowType;
-  onWorkflowChange: (workflow: WorkflowType) => void;
-}
-
-export function WorkflowSelector({ currentWorkflow, onWorkflowChange }: WorkflowSelectorProps) {
-  const current = workflows.find(w => w.id === currentWorkflow);
-
-  return (
-    <div className="relative">
-      <select
-        value={currentWorkflow}
-        onChange={(e) => onWorkflowChange(e.target.value as WorkflowType)}
-        className="appearance-none px-4 py-2 pr-8 border border-[#e0e0e0] rounded bg-white text-[0.875rem] font-medium text-[#212121] hover:border-[#90caf9] focus:outline-none focus:border-[#101F36] focus:ring-1 focus:ring-[#101F36] cursor-pointer"
-      >
-        {workflows.map((workflow) => (
-          <option key={workflow.id} value={workflow.id}>
-            {workflow.title}
-          </option>
-        ))}
-      </select>
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-        <svg className="w-4 h-4 text-[#616161]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </div>
-    </div>
-  );
-}
