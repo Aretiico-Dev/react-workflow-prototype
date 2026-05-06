@@ -11,7 +11,7 @@
 - [x] Adobe cert order process
 - [X] aviation certificates
 
-- [ ] certificate problem report
+- [x] certificate problem report
 - [ ] configure workflow as super admin - user verification and 2fa examples
 
 ## Following cert orders will simply use the existing customer and admin portal UI as their 'prototype' design

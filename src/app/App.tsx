@@ -4,6 +4,7 @@ import { WorkflowType } from './components/workflows/WorkflowSelector';
 import { AdobeCertificatePurchaseWorkflow } from './components/workflows/AdobeCertificatePurchaseWorkflow';
 import AviationCertificateWorkflow from './components/workflows/AviationCertificateWorkflow';
 import { CertificatePurchaseWorkflow } from './components/workflows/CertificatePurchaseWorkflow';
+import { CertificateProblemReportWorkflow } from './components/workflows/CertificateProblemReportWorkflow';
 import { SmimeCertificatePurchaseWorkflow } from './components/workflows/SmimeCertificatePurchaseWorkflow';
 import { UserVerificationWorkflow } from './components/workflows/UserVerificationWorkflow';
 import { OrganisationClaimWorkflow } from './components/workflows/OrganisationClaimWorkflow';
@@ -23,6 +24,7 @@ export default function App() {
       {currentWorkflow === 'smime-certificate-purchase' && <SmimeCertificatePurchaseWorkflow />}
       {currentWorkflow === 'adobe-certificate-purchase' && <AdobeCertificatePurchaseWorkflow />}
       {currentWorkflow === 'aviation-certificate-purchase' && <AviationCertificateWorkflow />}
+      {currentWorkflow === 'certificate-problem-report' && <CertificateProblemReportWorkflow />}
       {currentWorkflow === 'user-verification' && <UserVerificationWorkflow />}
       {currentWorkflow === 'organisation-claim' && <OrganisationClaimWorkflow />}
       {currentWorkflow === 'organisation-join-request' && !joinDecision && (

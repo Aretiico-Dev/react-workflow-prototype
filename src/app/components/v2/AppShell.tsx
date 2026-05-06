@@ -70,10 +70,10 @@ export function AppShell({
       {/* Sidebar */}
       <aside className={`
         fixed top-20 left-0 bottom-0 w-64 bg-white border-r border-[#e0e0e0] z-20
-        transition-transform duration-300 lg:translate-x-0
+        overflow-y-auto overscroll-contain transition-transform duration-300 lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <nav className="p-4 space-y-1">
+        <nav className="p-4 pb-8 space-y-1">
           {showWorkflowNav ? (
             <>
               <div className="px-4 pb-2 text-[0.75rem] font-semibold uppercase tracking-wide text-[#616161]">
