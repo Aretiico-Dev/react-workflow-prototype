@@ -1,6 +1,6 @@
-import { FileSignature, UserCheck, Building2, Shield, KeyRound, UserPlus, MailCheck, Plane, ShieldAlert } from 'lucide-react';
+import { FileSignature, UserCheck, Building2, Shield, KeyRound, UserPlus, MailCheck, Plane, ShieldAlert, GitBranch } from 'lucide-react';
 
-export type WorkflowType = 'certificate-purchase' | 'smime-certificate-purchase' | 'adobe-certificate-purchase' | 'aviation-certificate-purchase' | 'certificate-problem-report' | 'user-verification' | 'organisation-claim' | 'organisation-join-request' | '2fa-reset';
+export type WorkflowType = 'certificate-purchase' | 'smime-certificate-purchase' | 'adobe-certificate-purchase' | 'aviation-certificate-purchase' | 'certificate-problem-report' | 'user-verification' | 'organisation-claim' | 'organisation-join-request' | '2fa-reset' | 'project-process-builder';
 
 interface WorkflowOption {
   id: WorkflowType;
@@ -74,5 +74,12 @@ export const workflows: WorkflowOption[] = [
     description: 'Reset two factor authentication for a user',
     icon: KeyRound,
     category: 'verification',
+  },
+  {
+    id: 'project-process-builder',
+    title: 'Project Process Builder',
+    description: 'Configure project workflows with drag-and-drop nodes',
+    icon: GitBranch,
+    category: 'organization',
   },
 ];
