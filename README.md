@@ -1,11 +1,19 @@
 
-  # TLS Certificate Purchase Prototype
+# Workflow Prototypes
 
-  This is a code bundle for TLS Certificate Purchase Prototype. The original project is available at https://www.figma.com/design/UwzEzcX735qYCfndbRAjlO/TLS-Certificate-Purchase-Prototype.
+This repository contains React/Vite prototypes for Aretiico workflow experiences. It started as a TLS certificate purchase prototype from Figma, but now includes multiple certificate, verification, organisation, and admin review workflows used to explore customer and admin portal interactions.
 
-  ## Running the code
+Current prototype areas include:
 
-  Run `npm i` to install the dependencies.
+- TLS, S/MIME, Adobe, and aviation certificate purchase flows
+- Certificate problem report flow with reporter, reviewer, and decision maker views
+- User verification and 2FA reset flows
+- Organisation claim, join request, and dispute-related flows
 
-  Run `npm run dev` to start the development server.
-  
+## Running the code
+
+Run `npm i` to install the dependencies.
+
+Run `npm run dev` to start the development server.
+
+Run `npm run build` to create a production build.
