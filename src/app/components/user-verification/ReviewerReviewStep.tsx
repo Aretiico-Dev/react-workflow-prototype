@@ -3,7 +3,6 @@ import { ReviewIdStep } from './reviewer/ReviewIdStep';
 import { ReviewAddressStep } from './reviewer/ReviewAddressStep';
 import { AutomatedTasksStep } from './reviewer/AutomatedTasksStep';
 import { ManualTasksStep } from './reviewer/ManualTasksStep';
-import { WaitingForCallScheduleStep } from './reviewer/WaitingForCallScheduleStep';
 import { JoinCallStep } from './reviewer/JoinCallStep';
 import { RecordCallResultsStep } from './reviewer/RecordCallResultsStep';
 import { SendForReviewStep } from './reviewer/SendForReviewStep';
@@ -14,7 +13,6 @@ type ReviewerStep =
   | 'review-address'
   | 'automated-tasks'
   | 'manual-tasks'
-  | 'waiting-for-schedule'
   | 'join-call'
   | 'record-results'
   | 'send-for-review'
@@ -72,7 +70,6 @@ export function ReviewerReviewStep() {
     { id: 'review-address', label: 'Review Address' },
     { id: 'automated-tasks', label: 'Automated Tasks' },
     { id: 'manual-tasks', label: 'Manual Tasks' },
-    { id: 'waiting-for-schedule', label: 'Awaiting Schedule' },
     { id: 'join-call', label: 'Video Call' },
     { id: 'record-results', label: 'Record Results' },
     { id: 'send-for-review', label: 'Send for Review' },
@@ -82,9 +79,6 @@ export function ReviewerReviewStep() {
   const currentStepIndex = steps.findIndex(s => s.id === currentStep);
 
   const canNavigateToStep = (stepId: ReviewerStep, stepIndex: number) => {
-    // Can't navigate to waiting-for-schedule
-    if (stepId === 'waiting-for-schedule') return false;
-
     // Can't navigate to join-call if we've moved past it
     if (stepId === 'join-call' && currentStepIndex > stepIndex) return false;
 
@@ -180,14 +174,8 @@ export function ReviewerReviewStep() {
           onNext={(report, flag) => {
             setEvidenceFiles(prev => ({ ...prev, manualReport: report }));
             if (flag) addFlag('Manual Tasks', flag.comment);
-            setCurrentStep('waiting-for-schedule');
+            setCurrentStep('join-call');
           }}
-        />
-      )}
-
-      {currentStep === 'waiting-for-schedule' && (
-        <WaitingForCallScheduleStep
-          onScheduled={() => setCurrentStep('join-call')}
         />
       )}
 
