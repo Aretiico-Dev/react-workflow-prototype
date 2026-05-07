@@ -3,7 +3,6 @@ import { UploadIdStep } from './customer/UploadIdStep';
 import { UploadProofOfAddressStep } from './customer/UploadProofOfAddressStep';
 import { ExtractingDetailsStep } from './customer/ExtractingDetailsStep';
 import { ConfirmDetailsStep } from './customer/ConfirmDetailsStep';
-import { PreCallChecksStep } from './customer/PreCallChecksStep';
 import { ScheduleCallStep } from './customer/ScheduleCallStep';
 import { BackgroundChecksStep } from './customer/BackgroundChecksStep';
 import { ResultStep } from './customer/ResultStep';
@@ -14,7 +13,6 @@ type CustomerStep =
   | 'upload-address'
   | 'extracting'
   | 'confirm-details'
-  | 'pre-call-checks'
   | 'schedule-call'
   | 'background-checks'
   | 'result';
@@ -59,7 +57,6 @@ export function CustomerSubmitStep() {
     { id: 'upload-address', label: 'Proof of Address' },
     { id: 'extracting', label: 'Processing' },
     { id: 'confirm-details', label: 'Confirm Details' },
-    { id: 'pre-call-checks', label: 'Initial Checks' },
     { id: 'schedule-call', label: 'Video Call' },
     { id: 'background-checks', label: 'Final Checks' },
     { id: 'result', label: 'Result' },
@@ -148,15 +145,9 @@ export function CustomerSubmitStep() {
           extractedAddressDetails={verificationData.addressDetails}
           onNext={(personalDetails, addressDetails) => {
             setVerificationData(prev => ({ ...prev, personalDetails, addressDetails }));
-            setCurrentStep('pre-call-checks');
+            setCurrentStep('schedule-call');
           }}
           onCancel={() => setCancelDialogOpen(true)}
-        />
-      )}
-
-      {currentStep === 'pre-call-checks' && (
-        <PreCallChecksStep
-          onComplete={() => setCurrentStep('schedule-call')}
         />
       )}
 
